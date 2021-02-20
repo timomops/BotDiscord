@@ -1,27 +1,25 @@
 #import discord
-#import os
+import os
 from discord.ext import commands
 from discord.utils import get
 import discord
+from decouple import config
+
+token= config('key')
 
 client = commands.Bot(command_prefix = '!', help_command=None)
 
 message = "Ici y a un gros pavé comme chez PlageIs"
 privatemessage = "Un channel est crée à ton nom pour ton apply"
-numberapply = 0
-
-def increment():
-  global numberapply
-  numberapply = numberapply+1
 
 @client.event
 async def on_ready():
   print(f'{client.user} has Awoken!')
 
+
 @client.command()
 async def apply(ctx):
   if ctx.channel.name == 'apply':
-    #increment()
     guild = ctx.guild
     authour = ctx.message.author
   # All member who can access
@@ -45,31 +43,13 @@ async def apply(ctx):
       authour_role: discord.PermissionOverwrite(read_messages=True)
     }
 
-    if ctx.author.guild_permissions.manage_channels:
   #Create channel
-      nameChannel="candidature "+str(ctx.author.display_name)
-      await guild.create_text_channel(name=nameChannel,overwrites=overwrites)
-
-  #Get new channel id 
-      channel = discord.utils.get(guild.text_channels, name=ctx.author.display_name)
-  #Send Message
-      #await channel.send(message)
+    nameChannel="candidature "+str(ctx.author.display_name)
+    await guild.create_text_channel(name=nameChannel,overwrites=overwrites)
   #Send Private Message
-      await ctx.author.send(privatemessage)
+    await ctx.author.send(privatemessage)
+    await ctx.message.delete()
+
       #await ctx.send(embed=mbed)
 
-client.run('ODExOTUyMDQ0ODU5OTgxODI1.YC5rRA.wGQxRkmBo4hrSOizsGwdI3aSEh4')
-
-'''
-
-@client.command()
-async def deletechannel(ctx, channel: discord.TextChannel):
-  mbed = discord.Embed(
-    title = 'Success',
-    description = f'Channel: {channel} has been deleted',
-  )
-  if ctx.author.guild_permissions.manage_channels:
-    await ctx.send(embed=mbed)
-    await channel.delete()
-
-'''
+client.run(token)
