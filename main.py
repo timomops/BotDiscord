@@ -1,6 +1,8 @@
 #import discord
 import os
 import time
+import requests
+import json
 from discord.ext import commands
 from discord.ext.commands import Bot, has_permissions, CheckFailure
 from discord.utils import get
@@ -32,8 +34,8 @@ async def help(ctx):
   em = discord.Embed(title = "Help", description = "Use +help <command>")
 
   em.add_field(name = "Apply", value="Candidature")
-  em.add_field(name = "Admin",value="clean,purge")
-  em.add_field(name = "Other", value="ping")
+  em.add_field(name = "Admin",value="clean,purge,mute,unmute")
+  em.add_field(name = "All", value="ping,raiderio")
 
   await ctx.send(embed =em)
 
@@ -44,10 +46,30 @@ async def purge(ctx):
   await ctx.send(embed = em)
 
 @help.command()
+async def raiderio(ctx):
+  em = discord.Embed(title = "Raiderio", description= "Chercher le raiderIo d'une personne",color = ctx.author.color)
+  em.add_field(name = "**Syntax**", value = "+raiderio <region> <realm> <username>\n Exemple : +raiderio eu archimonde phanttømax")
+  await ctx.send(embed = em)
+
+@help.command()
 async def clean(ctx):
   em = discord.Embed(title = "Clean", description= "Permet de supprimer le channel d'un apply",color = ctx.author.color)
   em.add_field(name = "**Syntax**", value = "+clean <nom>")
   await ctx.send(embed = em)
+
+@help.command()
+async def mute(ctx):
+  em = discord.Embed(title = "Mute", description= "Mute tout les membres dans le channel vocal sauf la Sainte trinité",color = ctx.author.color)
+  em.add_field(name = "**Syntax**", value = "+mute")
+  await ctx.send(embed = em)
+
+@help.command()
+async def unmute(ctx):
+  em = discord.Embed(title = "Unmute", description= "Unmute tout les membres dans le channel vocal",color = ctx.author.color)
+  em.add_field(name = "**Syntax**", value = "+unmute")
+  await ctx.send(embed = em)
+
+#### Seperate help command with command bot ####
 
 #Apply clarity
 @client.command()
@@ -104,6 +126,15 @@ async def ping(ctx):
      await ctx.send(f'Pong! In {round(client.latency * 1000)}ms')
      await ctx.message.delete()
 
+#Check raider.io 
+@client.command()
+async def raiderio(ctx,region,realm,name):
+	#https://raider.io/api/
+	parameters = {'region': region, 'realm':realm,'name': name}
+	response = requests.get(url="https://raider.io/api/v1/characters/profile", params=parameters)
+	data = response.json()
+	await ctx.send(data['profile_url'])
+
 #Purge x message
 @client.command(pass_context=True)
 async def purge(ctx, limit: int):
@@ -118,6 +149,7 @@ async def purge(ctx, limit: int):
 
 #Clean channel apply
 @client.command()
+@commands.has_permissions(administrator = True)
 async def clean(ctx,username):
   guild = ctx.message.guild
   #Delete channel
@@ -126,7 +158,7 @@ async def clean(ctx,username):
   await channel.delete()
   ##TODO MAKE DELETE ROLE WORKING##
 
-  #Delete role
+  # Delete role
   #roleName='Candidature '+str(username)
   #print(f'-----------------------------------------')
   #role = discord.utils.get(ctx.message.roles, name=roleName)
@@ -143,7 +175,7 @@ async def mute(ctx):
     for role in member.roles:
       if ('Sainte trinité' in str(role)):
         tmp = 1
-        print(f'{member} à sainte trinité')
+        #print(f'{member} à sainte trinité')
         
     if tmp != 0:
       await member.edit(mute=False)
