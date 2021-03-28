@@ -38,7 +38,7 @@ async def help(ctx):
   em = discord.Embed(title = "Help", description = "Use +help <command>")
 
   em.add_field(name = "Apply", value="Candidature")
-  em.add_field(name = "Admin",value="clean,purge,mute,unmute")
+  em.add_field(name = "Admin",value="clean,purge,mute,unmute,reaction, participant,closevote")
   em.add_field(name = "All", value="ping,raiderio")
 
   await ctx.send(embed =em)
@@ -72,6 +72,25 @@ async def unmute(ctx):
   em = discord.Embed(title = "Unmute", description= "Unmute tout les membres dans le channel vocal",color = ctx.author.color)
   em.add_field(name = "**Syntax**", value = "+unmute")
   await ctx.send(embed = em)
+
+@help.command()
+async def clean(ctx):
+  em = discord.Embed(title = "reaction", description= "Créer un message permettant aux utilisateurs de voter",color = ctx.author.color)
+  em.add_field(name = "**Syntax**", value = "+reaction")
+  await ctx.send(embed = em)
+
+@help.command()
+async def participant(ctx):
+  em = discord.Embed(title = "reaction", description= "Permet d'envoyer la liste des personnes ayant voté",color = ctx.author.color)
+  em.add_field(name = "**Syntax**", value = "+participant")
+  await ctx.send(embed = em)
+
+@help.command()
+async def clean(ctx):
+  em = discord.Embed(title = "reaction", description= "Ferme le vote et envoie la liste des personnes ayant voté",color = ctx.author.color)
+  em.add_field(name = "**Syntax**", value = "+closevote")
+  await ctx.send(embed = em)
+
 #### Seperate help command with command bot ####
 
 #Apply clarity
@@ -192,7 +211,6 @@ async def unmute(ctx):
   guild= ctx.message.guild
   for member in vc.members:
     await member.edit(mute=False)
-
 
 @client.command(pass_context=True)
 @has_permissions(administrator=True)
