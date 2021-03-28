@@ -25,10 +25,14 @@ Un Screen de ton interface, un lien vers ton Warcraftlogs, un Lien de ton dps su
 
 alreadyapply = "Un channel existe déja pour ton apply"
 
+people_list = []
+msg = None
+
+
 @client.event
 async def on_ready():
-  print(f'{client.user} has Awoken!')
-
+  #print('{client.user} has Awoken!')
+  print("{} has awoken !".format(client.user))
 @client.group(invoke_without_command=True)
 async def help(ctx):
   em = discord.Embed(title = "Help", description = "Use +help <command>")
@@ -68,7 +72,6 @@ async def unmute(ctx):
   em = discord.Embed(title = "Unmute", description= "Unmute tout les membres dans le channel vocal",color = ctx.author.color)
   em.add_field(name = "**Syntax**", value = "+unmute")
   await ctx.send(embed = em)
-
 #### Seperate help command with command bot ####
 
 #Apply clarity
@@ -89,13 +92,13 @@ async def Candidature(ctx):
         idiotRole = await guild.create_role(name=idiot,permissions=discord.Permissions(3072),reason="Un idiot est née")
         await authour.add_roles(idiotRole)
     else:
-      #No role continue    
+      #No role continu
       #All member who can access
       member = ctx.author
       admin_role = get(guild.roles, name="Sainte trinité")
       roster_role = get(guild.roles, name="Roster")
       tmp = 'Candidature '+str(authour.display_name)
-     
+
       #Create new role
       if get(ctx.guild.roles,name=tmp):  
         await ctx.author.send(alreadyapply)
@@ -109,7 +112,7 @@ async def Candidature(ctx):
           guild.default_role: discord.PermissionOverwrite(read_messages=False),
           guild.me: discord.PermissionOverwrite(read_messages=True),
           admin_role: discord.PermissionOverwrite(read_messages=True),
-          roster_role: discord.PermissionOverwrite(manage_messages=False,read_messages=True),
+          roster_role: discord.PermissionOverwrite(manage_messages=False,read_messages=True,send_messages=false),
           authour_role: discord.PermissionOverwrite(read_messages=True)
         }
 
@@ -123,7 +126,7 @@ async def Candidature(ctx):
 #Ping bot
 @client.command()
 async def ping(ctx):
-     await ctx.send(f'Pong! In {round(client.latency * 1000)}ms')
+     await ctx.send('Pong! In {round(client.latency * 1000)}ms')
      await ctx.message.delete()
 
 #Check raider.io 
@@ -189,6 +192,44 @@ async def unmute(ctx):
   guild= ctx.message.guild
   for member in vc.members:
     await member.edit(mute=False)
+
+
+@client.command(pass_context=True)
+@has_permissions(administrator=True)
+async def reaction(ctx):
+  await ctx.channel.purge(limit=1)
+  global msg
+  msg = await ctx.send("**Clique sur '✅' si tu participes au poste précedent!**")
+  reactions = ['✅']
+  for emoji in reactions:
+    await msg.add_reaction(emoji)
+
+@client.event
+async def on_reaction_add(reaction, user):
+  if reaction.message == msg:
+    people_list.append(user)
+
+@client.command(pass_context=True)
+@has_permissions(administrator=True)
+async def participant(ctx):
+  await ctx.channel.purge(limit=1)
+  await ctx.send("**Personnes qui ont cliqué sur '✅' :**")
+  for i in range(len(people_list)):
+    if i != 0:
+      await ctx.send("{}".format(people_list[i].nick))
+
+@client.command(pass_context=True)
+@has_permissions(administrator=True)
+async def closevote(ctx):
+  await ctx.channel.purge(limit=1)
+  await ctx.send("**Vote fini, les personnes qui ont cliqué sur '✅' sont :**")
+  for i in range(len(people_list)):
+    if i != 0:
+      await ctx.send("{}".format(people_list[i].nick))
+  global msg 
+  global people_list
+  msg = None
+  people_list = []
 
 
 client.run(token)
