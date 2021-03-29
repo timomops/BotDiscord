@@ -74,7 +74,7 @@ async def unmute(ctx):
   await ctx.send(embed = em)
 
 @help.command()
-async def clean(ctx):
+async def reaction(ctx):
   em = discord.Embed(title = "reaction", description= "Créer un message permettant aux utilisateurs de voter",color = ctx.author.color)
   em.add_field(name = "**Syntax**", value = "+reaction")
   await ctx.send(embed = em)
@@ -86,7 +86,7 @@ async def participant(ctx):
   await ctx.send(embed = em)
 
 @help.command()
-async def clean(ctx):
+async def closevote(ctx):
   em = discord.Embed(title = "reaction", description= "Ferme le vote et envoie la liste des personnes ayant voté",color = ctx.author.color)
   em.add_field(name = "**Syntax**", value = "+closevote")
   await ctx.send(embed = em)
@@ -131,7 +131,7 @@ async def Candidature(ctx):
           guild.default_role: discord.PermissionOverwrite(read_messages=False),
           guild.me: discord.PermissionOverwrite(read_messages=True),
           admin_role: discord.PermissionOverwrite(read_messages=True),
-          roster_role: discord.PermissionOverwrite(manage_messages=False,read_messages=True,send_messages=false),
+          roster_role: discord.PermissionOverwrite(manage_messages=False,read_messages=True,send_messages=False),
           authour_role: discord.PermissionOverwrite(read_messages=True)
         }
 
@@ -217,7 +217,7 @@ async def unmute(ctx):
 async def reaction(ctx):
   await ctx.channel.purge(limit=1)
   global msg
-  msg = await ctx.send("**Clique sur '✅' si tu participes au poste précedent!**")
+  msg = await ctx.send("**Clique sur '✅' si tu participes au post précedent!**")
   reactions = ['✅']
   for emoji in reactions:
     await msg.add_reaction(emoji)
@@ -232,9 +232,12 @@ async def on_reaction_add(reaction, user):
 async def participant(ctx):
   await ctx.channel.purge(limit=1)
   await ctx.send("**Personnes qui ont cliqué sur '✅' :**")
+  temp = ""
   for i in range(len(people_list)):
     if i != 0:
-      await ctx.send("{}".format(people_list[i].nick))
+      temp+=("{}\n".format(people_list[i].nick))
+      #await ctx.send("{}".format(people_list[i].nick))
+  await ctx.send(temp)
 
 @client.command(pass_context=True)
 @has_permissions(administrator=True)
