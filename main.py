@@ -8,6 +8,7 @@ from discord.ext.commands import Bot, has_permissions, CheckFailure
 from discord.utils import get
 import discord
 from decouple import config
+from datetime import datetime
 
 token= config('key')
 
@@ -26,6 +27,7 @@ Un Screen de ton interface, un lien vers ton Warcraftlogs, un Lien de ton dps su
 alreadyapply = "Un channel existe déja pour ton apply"
 
 people_list = []
+refuse_list = []
 msg = None
 
 
@@ -38,7 +40,7 @@ async def help(ctx):
   em = discord.Embed(title = "Help", description = "Use +help <command>")
 
   em.add_field(name = "Apply", value="Candidature")
-  em.add_field(name = "Admin",value="clean,purge,mute,unmute,reaction, participant,closevote")
+  em.add_field(name = "Admin",value="clean,purge,reaction,participant,closevote,strawpoll,closestrawpoll")
   em.add_field(name = "All", value="ping,raiderio")
 
   await ctx.send(embed =em)
@@ -222,10 +224,30 @@ async def reaction(ctx):
   for emoji in reactions:
     await msg.add_reaction(emoji)
 
+@client.command(pass_context=True)
+@has_permissions(administrator=True)
+async def strawpoll(ctx):
+  await ctx.channel.purge(limit=1)
+  global msg
+  msg = await ctx.send("**Vote '✅' ou '❎'**")
+  reactions = ['✅','❎']
+  for emoji in reactions:
+    await msg.add_reaction(emoji)
+
 @client.event
 async def on_reaction_add(reaction, user):
   if reaction.message == msg:
-    people_list.append(user)
+    if str(reaction) == "✅" :
+      people_list.append(user)
+    else:
+      refuse_list.append(user)
+    #print(user)
+    now = datetime.now()
+    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+    if user.nick == None:
+      print(user,"à",dt_string,"vote :",reaction)
+    else:
+      print(user.nick,"à", dt_string,"vote :",reaction)
 
 @client.command(pass_context=True)
 @has_permissions(administrator=True)
@@ -233,24 +255,67 @@ async def participant(ctx):
   await ctx.channel.purge(limit=1)
   await ctx.send("**Personnes qui ont cliqué sur '✅' :**")
   temp = ""
+  #print("{}".format(people_list))
   for i in range(len(people_list)):
     if i != 0:
-      temp+=("{}\n".format(people_list[i].nick))
+      if people_list[i].nick == None:
+        #print("{}\n".format(people_list[i]))
+        temp+=("{}\n".format(people_list[i].name))
+      else:
+        temp+=("{}\n".format(people_list[i].nick))
       #await ctx.send("{}".format(people_list[i].nick))
+  await ctx.send(temp)
+  await ctx.send("**Personnes qui ont cliqué sur '❎' :**")
+  temp = ""
+  for i in range(len(refuse_list)):
+    if i != 0:
+      if refuse_list[i].nick == None:
+        #print("{}\n".format(refuse_list[i]))
+        temp+=("{}\n".format(refuse_list[i].name))
+      else:
+        temp+=("{}\n".format(refuse_list[i].nick))
+      #await ctx.send("{}".format(refuse_list[i].nick))
   await ctx.send(temp)
 
 @client.command(pass_context=True)
 @has_permissions(administrator=True)
 async def closevote(ctx):
-  await ctx.channel.purge(limit=1)
-  await ctx.send("**Vote fini, les personnes qui ont cliqué sur '✅' sont :**")
-  for i in range(len(people_list)):
-    if i != 0:
-      await ctx.send("{}".format(people_list[i].nick))
   global msg 
   global people_list
+  await ctx.channel.purge(limit=1)
+  await ctx.send("**Vote fini, les personnes qui ont cliqué sur '✅' sont :**")
+  temp = ""
+  for i in range(len(people_list)):
+    if i != 0:
+      temp+=("{}\n".format(people_list[i].nick))
+      #await ctx.send("{}".format(people_list[i].nick))
+  await ctx.send(temp)
   msg = None
   people_list = []
 
+@client.command(pass_context=True)
+@has_permissions(administrator=True)
+async def closestrawpoll(ctx):
+  global msg 
+  global people_list
+  global refuse_list
+  await ctx.channel.purge(limit=1)
+  await ctx.send("**Vote fini, les personnes qui ont cliqué sur '✅' sont :**")
+  temp = ""
+  for i in range(len(people_list)):
+    if i != 0:
+      temp+=("{}\n".format(people_list[i].nick))
+      #await ctx.send("{}".format(people_list[i].nick))
+  await ctx.send(temp)
+  await ctx.send("**Et les personnes qui ont cliqué sur '❎' sont :**")
+  temp = ""
+  for i in range(len(refuse_list)):
+    if i != 0:
+      temp+=("{}\n".format(refuse_list[i].nick))
+      #await ctx.send("{}".format(refuse_list[i].nick))
+  await ctx.send(temp)  
+  msg = None
+  people_list = []
+  refuse_list = []
 
 client.run(token)
