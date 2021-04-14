@@ -238,9 +238,15 @@ async def strawpoll(ctx):
 async def on_reaction_add(reaction, user):
   if reaction.message == msg:
     if str(reaction) == "✅" :
-      people_list.append(user)
+      if user in people_list:
+        pass
+      else:
+        people_list.append(user)
     else:
-      refuse_list.append(user)
+      if user in refuse_list:
+        pass
+      else:
+        refuse_list.append(user)
     #print(user)
     now = datetime.now()
     dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
@@ -264,6 +270,8 @@ async def participant(ctx):
       else:
         temp+=("{}\n".format(people_list[i].nick))
       #await ctx.send("{}".format(people_list[i].nick))
+  if temp == "":
+    temp = "Personne"
   await ctx.send(temp)
   await ctx.send("**Personnes qui ont cliqué sur '❎' :**")
   temp = ""
@@ -275,6 +283,8 @@ async def participant(ctx):
       else:
         temp+=("{}\n".format(refuse_list[i].nick))
       #await ctx.send("{}".format(refuse_list[i].nick))
+  if temp == "":
+    temp = "Personne"
   await ctx.send(temp)
 
 @client.command(pass_context=True)
@@ -289,6 +299,8 @@ async def closevote(ctx):
     if i != 0:
       temp+=("{}\n".format(people_list[i].nick))
       #await ctx.send("{}".format(people_list[i].nick))
+  if temp == "":
+    temp = "Personne"
   await ctx.send(temp)
   msg = None
   people_list = []
@@ -310,6 +322,8 @@ async def closestrawpoll(ctx):
       else:
         temp+=("{}\n".format(people_list[i].nick))
       #await ctx.send("{}".format(people_list[i].nick))
+  if temp == "":
+    temp = "Personne"
   await ctx.send(temp)
   await ctx.send("**Et les personnes qui ont cliqué sur '❎' sont :**")
   temp = ""
@@ -321,6 +335,8 @@ async def closestrawpoll(ctx):
       else:
         temp+=("{}\n".format(refuse_list[i].nick))
       #await ctx.send("{}".format(refuse_list[i].nick))
+  if temp == "":
+    temp = "Personne"
   await ctx.send(temp)  
   msg = None
   people_list = []
