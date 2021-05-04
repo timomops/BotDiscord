@@ -297,8 +297,11 @@ async def closevote(ctx):
   temp = ""
   for i in range(len(people_list)):
     if i != 0:
-      temp+=("{}\n".format(people_list[i].nick))
-      #await ctx.send("{}".format(people_list[i].nick))
+      if people_list[i].nick == None:
+        #print("{}\n".format(people_list[i]))
+        temp+=("{}\n".format(people_list[i].name))
+      else:
+        temp+=("{}\n".format(people_list[i].nick))
   if temp == "":
     temp = "Personne"
   await ctx.send(temp)
