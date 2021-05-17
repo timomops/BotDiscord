@@ -3,6 +3,7 @@ import os
 import time
 import requests
 import json
+import string
 from discord.ext import commands
 from discord.ext.commands import Bot, has_permissions, CheckFailure
 from discord.utils import get
@@ -180,14 +181,16 @@ async def clean(ctx,username):
   channelName = 'candidature-'+str(username)
   channel =  discord.utils.get(ctx.guild.channels, name=channelName)
   await channel.delete()
-  ##TODO MAKE DELETE ROLE WORKING##
+  #Delete role
+  print("roleName : ", roleName)
+  role_object = discord.utils.get(ctx.message.guild.roles, name=roleName)
+  if role_object:
+      await role_object.delete()
+  else:
+    roleName = string.capwords(roleName)
+    role_object = discord.utils.get(ctx.message.guild.roles, name=roleName)
+    await role_object.delete()
 
-  # Delete role
-  #roleName='Candidature '+str(username)
-  #print(f'-----------------------------------------')
-  #role = discord.utils.get(ctx.message.roles, name=roleName)
-  #print(f'*****************************************')
-  #await client.remove_roles(role)
 
 #Mute all except Sainte trinité
 @client.command()
@@ -344,5 +347,20 @@ async def closestrawpoll(ctx):
   msg = None
   people_list = []
   refuse_list = []
+
+
+@client.command(pass_context=True)
+async def lastpatch(ctx):
+  ## TODO BDD FOR LAST PATCH
+  last_patch = datetime(2020, 11, 23)
+  now  = datetime.now()
+  duration = now - last_patch
+  duration_in_s = duration.total_seconds()
+
+  days  = duration.days
+  days  = divmod(duration_in_s, 86400)[0]  
+  days = int(days)
+  send = "Le dernier patch était il y a " +str(days) +" jours"
+  await ctx.send(send)
 
 client.run(token)
