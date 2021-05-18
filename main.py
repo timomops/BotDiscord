@@ -4,6 +4,7 @@ import time
 import requests
 import json
 import string
+import random
 from discord.ext import commands
 from discord.ext.commands import Bot, has_permissions, CheckFailure
 from discord.utils import get
@@ -42,7 +43,7 @@ async def help(ctx):
 
   em.add_field(name = "Apply", value="Candidature")
   em.add_field(name = "Admin",value="clean,purge,reaction,participant,closevote,strawpoll,closestrawpoll")
-  em.add_field(name = "All", value="ping,raiderio")
+  em.add_field(name = "All", value="ping,raiderio,roll")
 
   await ctx.send(embed =em)
 
@@ -93,6 +94,13 @@ async def closevote(ctx):
   em = discord.Embed(title = "reaction", description= "Ferme le vote et envoie la liste des personnes ayant voté",color = ctx.author.color)
   em.add_field(name = "**Syntax**", value = "+closevote")
   await ctx.send(embed = em)
+
+@help.command()
+async def roll(ctx):
+  em = discord.Embed(title = "roll", description= "Fais un roll entre le premier et le deuxième chiffre",color = ctx.author.color)
+  em.add_field(name = "**Syntax**", value = "+roll")
+  await ctx.send(embed = em)
+
 
 #### Seperate help command with command bot ####
 
@@ -191,6 +199,12 @@ async def clean(ctx,username):
     role_object = discord.utils.get(ctx.message.guild.roles, name=roleName)
     await role_object.delete()
 
+#Roll the dice
+@client.command()
+async def roll(ctx,number_1, number_2):
+  n = random.randint(int(number_1),int(number_2))
+  message = "Tu as fait un " + str(n) + " !"
+  await ctx.send(message)
 
 #Mute all except Sainte trinité
 @client.command()
