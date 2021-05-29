@@ -156,8 +156,8 @@ async def Candidature(ctx):
 #Ping bot
 @client.command()
 async def ping(ctx):
-     await ctx.send('Pong! In {round(client.latency * 1000)}ms')
-     await ctx.message.delete()
+  await ctx.send('Pong! In {round(client.latency * 1000)}ms')
+  await ctx.message.delete()
 
 #Check raider.io 
 @client.command()
@@ -185,12 +185,20 @@ async def purge(ctx, limit: int):
 @commands.has_permissions(administrator = True)
 async def clean(ctx,username):
   guild = ctx.message.guild
+  #Copy discution in the channel to files
+  await ctx.message.delete()
+  filename=username+".txt"
+  with open(filename, "w") as f:
+    async for message in ctx.history(limit=1000):
+      f.write(message.author.name + " : " + message.content + "\n")
+
   #Delete channel
   channelName = 'candidature-'+str(username)
   channel =  discord.utils.get(ctx.guild.channels, name=channelName)
   await channel.delete()
   #Delete role
-  print("roleName : ", roleName)
+  roleName="Candidature "+str(username)
+  #print("roleName : ", roleName)
   role_object = discord.utils.get(ctx.message.guild.roles, name=roleName)
   if role_object:
       await role_object.delete()
