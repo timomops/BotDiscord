@@ -1,5 +1,6 @@
 #import discord
 import os
+import glob
 import time
 import requests
 import json
@@ -152,6 +153,36 @@ async def Candidature(ctx):
         #Send Private Message
         await ctx.author.send(privatemessage)    
     await ctx.message.delete()
+
+#Respond to private message
+@client.event
+async def on_message(message):
+  if message.author.id != client.user.id:
+    if message.guild:  # If message in guild
+      await client.process_commands(message)  # Process command
+    else:
+      print(" Débile : {0.author.name} à mp le bot pour dire : {0.content}".format(message))
+      return await message.author.send("Merci de relire l'étape 1 dans le channel **apply**")
+
+@client.command()
+async def Createchannel(ctx):
+  guild = ctx.guild
+  os.chdir("mydir")
+  #List of permissions
+  admin_role = get(guild.roles, name="Sainte trinité")
+  roster_role = get(guild.roles, name="Roster")
+  overwrites = {
+    guild.default_role: discord.PermissionOverwrite(read_messages=False),
+    guild.me: discord.PermissionOverwrite(read_messages=True),
+    admin_role: discord.PermissionOverwrite(read_messages=True),
+    roster_role: discord.PermissionOverwrite(manage_messages=False,read_messages=True,send_messages=False)
+  }  
+  for file in glob.glob("*"):
+    #Get filename
+    nameChannel = str(file.split('.')[0])
+    await guild.create_text_channel(name=nameChannel,overwrites=overwrites)
+  await ctx.message.delete()
+
 
 #Ping bot
 @client.command()
