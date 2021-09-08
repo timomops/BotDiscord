@@ -13,9 +13,11 @@ import discord
 from decouple import config
 from datetime import datetime
 
+intents = discord.Intents.all()
+
 token= config('key')
 
-client = commands.Bot(command_prefix = '+')
+client = commands.Bot(command_prefix = '+',intents=intents)
 client.remove_command("help")
 
 privatemessage = """Candidature - Clarity
@@ -33,6 +35,12 @@ people_list = []
 refuse_list = []
 msg = None
 
+year=[]
+month=[]
+day=[]
+
+id_channel_mp_bot = 862835138760278086
+path_patch = "patch/date.txt"
 
 @client.event
 async def on_ready():
@@ -127,6 +135,7 @@ async def Candidature(ctx):
       #All member who can access
       member = ctx.author
       admin_role = get(guild.roles, name="Sainte trinité")
+      apply_manager_role = get(guild.roles, name="Public Relations Manager")
       roster_role = get(guild.roles, name="Roster")
       tmp = 'Candidature '+str(authour.display_name)
 
@@ -143,6 +152,7 @@ async def Candidature(ctx):
           guild.default_role: discord.PermissionOverwrite(read_messages=False),
           guild.me: discord.PermissionOverwrite(read_messages=True),
           admin_role: discord.PermissionOverwrite(read_messages=True),
+          apply_manager_role: discord.PermissionOverwrite(read_messages=True,manage_messages=False,send_messages=True),
           roster_role: discord.PermissionOverwrite(manage_messages=False,read_messages=True,send_messages=False),
           authour_role: discord.PermissionOverwrite(read_messages=True)
         }
@@ -162,6 +172,9 @@ async def on_message(message):
       await client.process_commands(message)  # Process command
     else:
       print(" Débile : {0.author.name} à mp le bot pour dire : {0.content}".format(message))
+      text = str(message.author.name) + " mp : " +str(message.content)
+      channel = client.get_channel(id_channel_mp_bot)
+      await channel.send(text)
       return await message.author.send("Merci de relire l'étape 1 dans le channel **apply**")
 
 @client.command()
@@ -183,6 +196,18 @@ async def Createchannel(ctx):
     await guild.create_text_channel(name=nameChannel,overwrites=overwrites)
   await ctx.message.delete()
 
+
+## -------------------------------------------------------------------###
+
+#Track people who leave discord
+@client.event
+async def on_member_remove(member):
+  channel = client.get_channel(id_channel_mp_bot)
+  text = str(member) + " has left the server"
+  await channel.send(text)
+
+
+## -------------------------------------------------------------------###
 
 #Ping bot
 @client.command()
@@ -404,8 +429,18 @@ async def closestrawpoll(ctx):
 
 @client.command(pass_context=True)
 async def lastpatch(ctx):
-  ## TODO BDD FOR LAST PATCH
-  last_patch = datetime(2020, 11, 23)
+  #read file and parse
+  file = open(path_patch)
+  with open(path_patch) as f:
+    content = f.readlines()
+    for i in range(len(content)):
+      tmp = str(content[i]).split('=')[1]
+      year.append(tmp.split('-')[0])
+      month.append(tmp.split('-')[1])
+      day.append(tmp.split('-')[2])
+
+  #calcul and send
+  last_patch = datetime(int(year[0]), int(month[0]), int(day[0]))
   now  = datetime.now()
   duration = now - last_patch
   duration_in_s = duration.total_seconds()
@@ -415,5 +450,11 @@ async def lastpatch(ctx):
   days = int(days)
   send = "Le dernier patch était il y a " +str(days) +" jours"
   await ctx.send(send)
+  #Clean variable and close file 
+  file.close()
+  f.close()
+  year.clear()
+  month.clear()
+  day.clear()
 
 client.run(token)
